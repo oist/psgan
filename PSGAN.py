@@ -117,10 +117,12 @@ for epoch in range(opt.niter):
         errG.backward()
         optimizerU.step()
 
-        print('[%d/%d][%d/%d] D(x): %.4f D(G(z)): %.4f / %.4f time %.4f'
-              % (epoch, opt.niter, i, len(dataloader),D_x, D_G_z1, D_G_z2,time.time()-t0))
+      #  print('[%d/%d][%d/%d] D(x): %.4f D(G(z)): %.4f / %.4f time %.4f'
+       #       % (epoch, opt.niter, i, len(dataloader),D_x, D_G_z1, D_G_z2,time.time()-t0))
 
-        ### RUN INFERENCE AND SAVE LARGE OUTPUT MOSAICS
+        
+
+
         if i % 100 == 0:
             vutils.save_image(text,    '%s/real_textures.jpg' % opt.outputFolder,  normalize=True)
             vutils.save_image(fake,'%s/generated_textures_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
@@ -136,8 +138,8 @@ for epoch in range(opt.niter):
             vutils.save_image(fakeBig,'%s/big_texture_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
             netG.train()
 
-            ##OPTIONAL
-            ##save/load model for later use if desired
-            #outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.outputFolder, epoch*0,desc)
-            #torch.save(netU.state_dict(),outModelName )
-            #netU.load_state_dict(torch.load(outModelName))
+            #OPTIONAL
+            #save/load model for later use if desired
+            outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.outputFolder, epoch,desc)
+            torch.save(netG.state_dict(),outModelName )
+            #netG.load_state_dict(torch.load(outModelName))
