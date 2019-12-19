@@ -23,6 +23,7 @@ mirrorT= []
 if bMirror:
     mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
 transformTex=transforms.Compose(mirrorT+canonicT)
+
 dataset = TextureDataset(opt.texturePath,transformTex,opt.textureScale)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))
@@ -117,8 +118,8 @@ for epoch in range(opt.niter):
         errG.backward()
         optimizerU.step()
 
-      #  print('[%d/%d][%d/%d] D(x): %.4f D(G(z)): %.4f / %.4f time %.4f'
-       #       % (epoch, opt.niter, i, len(dataloader),D_x, D_G_z1, D_G_z2,time.time()-t0))
+        print('[%d/%d][%d/%d] D(x): %.4f D(G(z)): %.4f / %.4f time %.4f'
+              % (epoch, opt.niter, i, len(dataloader),D_x, D_G_z1, D_G_z2,time.time()-t0))
 
         
 
