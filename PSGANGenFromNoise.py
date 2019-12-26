@@ -18,6 +18,43 @@ import sys
 from network import weights_init,Discriminator,calc_gradient_penalty,NetG
 from config import opt,bMirror,nz,nDep,criterion
 import time
+import numpy as np
+
+
+ngf = 80
+ndf = 80
+nDep = 4
+opt.nDepD = 4
+opt.batchSize = 8
+opt.zGL = 20
+opt.zLoc = 10
+opt.zPeriodic = 0
+opt.sizeMultiplier=7
+nz=opt.zGL+opt.zLoc+opt.zPeriodic
+
+workPath = '/home/sam/bucket/textures/synthesizedImgs0-12/'
+
+
+outModelName = workPath + 'usedImgs/netG_epoch_99.pth'
+t1=np.load(workPath + 'usedImgs/noise1.npy',None,'allow_pickle',True)
+t2=np.load(workPath + 'usedImgs/noise2.npy',None,'allow_pickle',True)
+
+
+#linSpacing = np.linspace(-1,1,11)
+#quadSpacing = np.square(linSpacing)
+#t=np.append(0, np.cumsum(np.abs(np.diff(quadSpacing))))/2
+#img1Ratio=t*0.35+.15
+
+img1Ratio=np.linspace(0.15,0.45,10) # for synthesizedImgs0-12
+#img1Ratio=np.linspace(0.25,.65,10) # for synthesizedImgs0-22
+
+
+intNoise=[]
+for x in range( len(img1Ratio)):
+    intNoise.append(img1Ratio[x]*t1 + [1-img1Ratio[x]]*t2)
+intNoise=np.array(intNoise)
+np.save(workPath + 'usedImgs/intermediateNoise',intNoise)
+
 
 if opt.manualSeed is None:
     opt.manualSeed = random.randint(1, 10000)
@@ -25,15 +62,6 @@ print("Random Seed: ", opt.manualSeed)
 random.seed(opt.manualSeed)
 torch.manual_seed(opt.manualSeed)
 cudnn.benchmark = True
-
-canonicT=[transforms.RandomCrop(opt.imageSize),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-mirrorT= []
-if bMirror:
-    mirrorT += [transforms.RandomVerticalFlip(),transforms.RandomHorizontalFlip()]
-transformTex=transforms.Compose(mirrorT+canonicT)
-#dataset = TextureDataset(opt.texturePath,transformTex,opt.textureScale)
-#dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
-             #                            shuffle=True, num_workers=int(opt.workers))
 
 N=0
 ngf = int(opt.ngf)
@@ -81,39 +109,19 @@ fake_label = 0
 noise=noise.to(device)
 fixnoise=fixnoise.to(device)
 
-import numpy as np
-
-
-#outModelName = '/home/reiters/psgan/famos/results/frankfurt_collection/2019-06-07_13-11-53/netG_epoch_99_fc1.0_ngf120_ndf120_dep5-5.pth'
-#outModelName = '/gpfs/laur/sepia_tools/PSGAN_textures/usedTextures/netG_epoch_199_fc1.0_ngf80_ndf80_dep5-5.pth' 
-outModelName =  '/gpfs/laur/sepia_tools/PSGAN_textures/best_paired_models/curtain_rocks1_evaluated/netG_epoch_199_fc1.0_ngf80_ndf80_dep5-5.pth' 
-#outModelName =  '/gpfs/laur/sepia_tools/PSGAN_textures/best_paired_models/curtain_crack2_evaluated/best/netG_epoch_199_fc1.0_ngf80_ndf80_dep5-5.pth' 
-#outModelName =  '/gpfs/laur/sepia_tools/PSGAN_textures/best_paired_models/curtain_sand2_evaluated/best/netG_epoch_199_fc1.0_ngf80_ndf80_dep5-5.pth' 
 
 netG.load_state_dict(torch.load(outModelName))
 netG.eval()
 
-epoch=500
-
-#intNoise=np.load('/gpfs/laur/sepia_tools/PSGAN_textures/best_paired_models/curtain_sand2_evaluated/best/noiseImage1.npy',None, 'allow_pickle',True)
-intNoise=np.load('/gpfs/laur/sepia_tools/PSGAN_textures/best_paired_models/curtain_rocks1_evaluated/noiseImage1.npy',None, 'allow_pickle',True)
-
+epoch=0
 for x in range(intNoise.shape[0]):
-   # import pdb; pdb.set_trace()
+
     fixnoise=torch.from_numpy(intNoise[x]).float().to(device)
-  #  fixnoise=setNoise(fixnoise)
-   # np.save('%s/noiseBig_epoch_%03d_%s' % (opt.outputFolder, epoch, desc), fixnoise.cpu(),'allow_pickle',True)
 
     with torch.no_grad():
         fakeBig=netG(fixnoise)
 
-    vutils.save_image(fakeBig,'%s/intTex_%03d_%s.jpg' % (opt.outputFolder, epoch,desc),normalize=True)
+    vutils.save_image(fakeBig,workPath + 'usedImgs/intTex_%03d.jpg' % (epoch),normalize=True)
     epoch+=1
 
-#netG.train()
 
-#OPTIONAL
-#save/load model for later use if desired
-#outModelName = '%s/netG_epoch_%d_%s.pth' % (opt.outputFolder, epoch,desc)
-#torch.save(netG.state_dict(),outModelName )
-#netG.load_state_dict(torch.load(outModelName))

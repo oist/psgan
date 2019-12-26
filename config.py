@@ -5,7 +5,7 @@ import os
 parser = argparse.ArgumentParser()
 
 ##data path and loading parameters
-parser.add_argument('--texturePath', required=True, help='path to texture image folder')
+parser.add_argument('--texturePath', help='path to texture image folder')
 parser.add_argument('--contentPath', default='', help='path to content image folder')
 parser.add_argument('--mirror', type=bool, default=False,help='augment style image distribution for mirroring')
 parser.add_argument('--contentScale', type=float, default=1.0,help='scale content images')
@@ -72,12 +72,12 @@ else:
         return (val*(1-2*label)).mean()#so -1 fpr real. 1 fpr fake
     criterion=dummy
 
-if opt.outputFolder=='.':
-    i = opt.texturePath[:-1].rfind('/')
-    i2 = opt.contentPath[:-1].rfind('/')
-    opt.outputFolder = "results/"+opt.texturePath[i+1:]+opt.contentPath[i2+1:]##actually 2 nested folders -- cool
-    stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    opt.outputFolder += stamp + "/"
+# if opt.outputFolder=='.':
+#     i = opt.texturePath[:-1].rfind('/')
+#     i2 = opt.contentPath[:-1].rfind('/')
+#     opt.outputFolder = "results/"+opt.texturePath[i+1:]+opt.contentPath[i2+1:]##actually 2 nested folders -- cool
+#     stamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+#     opt.outputFolder += stamp + "/"
 try:
     os.makedirs(opt.outputFolder)
 except OSError:
